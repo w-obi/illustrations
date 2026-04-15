@@ -6,6 +6,12 @@
     <title>flower-window</title>
 
     <style>
+        @keyframes flowerM {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(-2deg); }
+            100% { transform: rotate(0deg); }
+        }
+
         #root {
             max-height: 100vh;
             overflow: hidden;
@@ -64,6 +70,8 @@
             left: 0;
             z-index: 1;
             pointer-events: none;
+            animation: flowerM 4s ease-in-out infinite;
+            transform-origin: center bottom;
         }
 
         .fl {
@@ -119,8 +127,9 @@
     <div class="flower-wrapper">
         <div id="petalbox"></div>
         <canvas class="fl" id="fline"></canvas>
-        <div class="pot" id="pot"></div>
     </div>
+
+    <div class="pot" id="pot"></div>
 
     <script>
         const snowCanvas = document.getElementById('snowCanvas');
@@ -210,8 +219,8 @@
                     x: Math.random() * snowCanvas.width,
                     y: Math.random() * snowCanvas.height,
                     radius: Math.random() * 2 + 1,
-                    speed: Math.random() * 4 + 0.5,
-                    wind: Math.random() * 4 - 0.25
+                    speed: Math.random() * 2 + 0.5,
+                    wind: Math.random() * 2 - 0.25
                 });
             }
         }
