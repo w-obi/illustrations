@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>flower-window</title>
+
+    <style>
+        #root {
+            max-height: 100vh;
+            overflow: hidden;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-image: linear-gradient(to bottom, #4f4f4f, #1f1f1f);
+        }
+
+        .window-wrapper {
+            position: relative;
+            width: 20vw;
+            height: 40vh;
+            border: 16px solid #381501;
+            background-image: linear-gradient(to bottom, #000000, #366675);
+            box-sizing: border-box;
+        }
+
+        .vert, .horiz {
+            position: absolute;
+            background-color: #381501;
+        }
+
+        .vert { width: 8px; height: 100%; left: calc(50% - 4px); top: 0; }
+        .horiz { width: 100%; height: 8px; top: calc(50% - 4px); left: 0; }
+
+        .sill {
+            position: relative;
+            background-color: #441901;
+            border: 16px solid #3a2315;
+            width: 25vw;
+            height: 5vh;
+            z-index: 10;
+        }
+
+        .flower-wrapper {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .fl {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+        }
+
+        #petalbox {
+            position: fixed;
+            z-index: 5;
+        }
+
+        .pot {
+            position: absolute;
+            background-color: #651300;
+            z-index: 3;
+            width: 50px;
+            height: 40px;
+            border-bottom-left-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+
+        .petal-unit {
+            position: absolute;
+            width: 20px;
+            height: 40px;
+            transform-origin: bottom center;
+            left: -10px; 
+            top: -40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="window-wrapper">
+        <div class="vert"></div>
+        <div class="horiz"></div>
+    </div>
+
+    <div class="sill" id="sill"></div>
+
+    <div class="flower-wrapper">
+        <div id="petalbox"></div>
+        <canvas class="fl" id="fline"></canvas>
+        <div class="pot" id="pot"></div>
+    </div>
+
+    <script>
+        function draw_fline() {
+            const flineCanvas = document.getElementById('fline');
+            flineCanvas.width = window.innerWidth;
+            flineCanvas.height = window.innerHeight;
+
+            const flineCtx = flineCanvas.getContext('2d');
+            const groundPos = document.getElementById('sill').getBoundingClientRect();
+
+            const flowerHeadY = groundPos.top - 120;
+            const flowerHeadX = groundPos.left + groundPos.width / 2;
+
+            flineCtx.beginPath();
+            flineCtx.moveTo(flowerHeadX, flowerHeadY);
+            flineCtx.quadraticCurveTo(
+                flowerHeadX + 30, flowerHeadY + 60, 
+                groundPos.left + groundPos.width / 2, groundPos.top
+            );
+
+            flineCtx.strokeStyle = '#5a7d32';
+            flineCtx.lineWidth = 4;
+            flineCtx.lineCap = 'round';
+            flineCtx.stroke();
+
+            //-----------------------------------------------------------------
+
+            const numPetals = 6;
+            const petalBox = document.getElementById('petalbox');
+            petalBox.innerHTML = '';
+            
+            petalBox.style.top = flowerHeadY + 'px';
+            petalBox.style.left = flowerHeadX + 'px';
+
+            for (let i = 0; i < numPetals; i++) {
+                draw_petal(i * (360 / numPetals));
+            }
+        }
+
+        function draw_petal(rotation) {
+            const petalsBox = document.getElementById('petalbox');
+            const div = document.createElement('div');
+            div.className = 'petal-unit';
+            div.style.transform = `rotate(${rotation}deg)`;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 20;
+            canvas.height = 40;
+            const ctx = canvas.getContext('2d');
+
+            ctx.beginPath();
+            ctx.moveTo(10, 40);
+            ctx.quadraticCurveTo(0, 20, 10, 0);   // Left side
+            ctx.quadraticCurveTo(20, 20, 10, 40); // Right side
+            
+            ctx.fillStyle = 'gray';
+            ctx.fill();
+            ctx.strokeStyle = 'gray';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            div.appendChild(canvas);
+            petalsBox.appendChild(div);
+        }
+
+        function potPos() {
+            const sillPos = document.getElementById('sill').getBoundingClientRect();
+            const pot = document.getElementById('pot');
+            
+            pot.style.left = (sillPos.left + sillPos.width / 2 - pot.offsetWidth / 2) + 'px';
+            pot.style.top = (sillPos.top - pot.offsetHeight) + 'px';
+        }
+
+        window.onload = () => { potPos(); draw_fline(); };
+        window.onresize = () => { potPos(); draw_fline(); };
+    </script>
+</body>
+</html>
