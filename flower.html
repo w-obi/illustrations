@@ -25,29 +25,32 @@
             justify-content: center;
             align-items: center;
             background-image: linear-gradient(to bottom, #4f4f4f, #1f1f1f);
+            font-size: 1px;
         }
 
         .window-wrapper {
             position: relative;
             width: 20vw;
             height: 40vh;
-            border: 16px solid #381501;
+            border: 16em solid #381501;
             background-image: linear-gradient(to bottom, #000000, #366675);
             box-sizing: border-box;
+            overflow: hidden;
         }
 
         .vert, .horiz {
             position: absolute;
             background-color: #381501;
+            z-index: 1;
         }
 
-        .vert { width: 8px; height: 100%; left: calc(50% - 4px); top: 0; }
-        .horiz { width: 100%; height: 8px; top: calc(50% - 4px); left: 0; }
+        .vert { width: 8em; height: 100%; left: calc(50% - 4em); top: 0; }
+        .horiz { width: 100%; height: 8em; top: calc(50% - 4em); left: 0; }
 
         .sill {
             position: relative;
             background-color: #441901;
-            border: 16px solid #3a2315;
+            border: 16em solid #3a2315;
             width: 25vw;
             height: 5vh;
             z-index: 10;
@@ -79,24 +82,34 @@
             position: absolute;
             background-color: #651300;
             z-index: 3;
-            width: 50px;
-            height: 40px;
-            border-bottom-left-radius: 5px;
-            border-bottom-right-radius: 5px;
+            width: 50em;
+            height: 40em;
+            border-bottom-left-radius: 5em;
+            border-bottom-right-radius: 5em;
         }
 
         .petal-unit {
             position: absolute;
-            width: 20px;
-            height: 40px;
+            width: 20em;
+            height: 40em;
             transform-origin: bottom center;
-            left: -10px; 
-            top: -40px;
+            left: -10em; 
+            top: -40em;
+        }
+
+        #snowCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
         }
     </style>
 </head>
 <body>
     <div class="window-wrapper">
+        <canvas id="snowCanvas"></canvas>
         <div class="vert"></div>
         <div class="horiz"></div>
     </div>
@@ -110,6 +123,10 @@
     </div>
 
     <script>
+        const snowCanvas = document.getElementById('snowCanvas');
+        const sctx = snowCanvas.getContext('2d');
+        let snowflakes = [];
+
         function draw_fline() {
             const flineCanvas = document.getElementById('fline');
             flineCanvas.width = window.innerWidth;
@@ -139,8 +156,8 @@
             const petalBox = document.getElementById('petalbox');
             petalBox.innerHTML = '';
             
-            petalBox.style.top = flowerHeadY + 'px';
-            petalBox.style.left = flowerHeadX + 'px';
+            petalBox.style.top = flowerHeadY + 'em';
+            petalBox.style.left = flowerHeadX + 'em';
 
             for (let i = 0; i < numPetals; i++) {
                 draw_petal(i * (360 / numPetals));
@@ -177,12 +194,54 @@
             const sillPos = document.getElementById('sill').getBoundingClientRect();
             const pot = document.getElementById('pot');
             
-            pot.style.left = (sillPos.left + sillPos.width / 2 - pot.offsetWidth / 2) + 'px';
-            pot.style.top = (sillPos.top - pot.offsetHeight) + 'px';
+            pot.style.left = (sillPos.left + sillPos.width / 2 - pot.offsetWidth / 2) + 'em';
+            pot.style.top = (sillPos.top - pot.offsetHeight) + 'em';
         }
 
-        window.onload = () => { potPos(); draw_fline(); };
-        window.onresize = () => { potPos(); draw_fline(); };
+        function initSnow() {
+
+            const rect = snowCanvas.parentElement.getBoundingClientRect();
+            snowCanvas.width = rect.width;
+            snowCanvas.height = rect.height;
+
+            snowflakes = [];
+            for (let i = 0; i < 50; i++) {
+                snowflakes.push({
+                    x: Math.random() * snowCanvas.width,
+                    y: Math.random() * snowCanvas.height,
+                    radius: Math.random() * 2 + 1,
+                    speed: Math.random() * 4 + 0.5,
+                    wind: Math.random() * 4 - 0.25
+                });
+            }
+        }
+
+        function drawSnow() {
+            sctx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
+            sctx.fillStyle = "white";
+            sctx.beginPath();
+
+            for (let i = 0; i < snowflakes.length; i++) {
+                let f = snowflakes[i];
+        
+                sctx.moveTo(f.x, f.y);
+                sctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
+
+                f.y += f.speed;
+                f.x += f.wind;
+
+                if (f.y > snowCanvas.height) {
+                    f.y = -5;
+                    f.x = Math.random() * snowCanvas.width;
+                }
+            }
+    
+            sctx.fill();
+            requestAnimationFrame(drawSnow);
+        }
+
+        window.onload = () => { potPos(); draw_fline(); initSnow(); drawSnow(); };
+        window.onresize = () => { potPos(); draw_fline(); initSnow(); drawSnow(); };
     </script>
 </body>
 </html>
