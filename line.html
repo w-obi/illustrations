@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Line</title>
+
+    <style>
+      #root {
+        max-height: 100vh;
+        overflow: hidden;
+      }
+
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-color: black;
+        font-size: 1px;
+      }
+
+      .line-wrapper {
+        position: relative;
+        width: 80vw;
+        height: 70vh;
+        padding: 0;
+        border: solid 8em #d6c45a;
+        border-radius: 16em 16em 0 0;
+        box-sizing: border-box;
+        background-color: #484848;
+
+        background-image:
+          linear-gradient(to right, #af6060 1em, transparent 1em),
+          linear-gradient(to bottom, #af6060 1em, transparent 1em);
+
+        background-size: 20em 20em;
+      }
+
+      .settings-wrapper {
+        position: relative;
+        width: 80vw;
+        height: 16vh;
+        padding: 0;
+        border-left: solid 8em #d6c45a;
+        border-right: solid 8em #d6c45a;
+        border-bottom: solid 8em #d6c45a;
+        border-radius: 0 0 16em 16em;
+        box-sizing: border-box;
+        background-color: #484848;
+        display: flex;
+        justify-content: space-between;
+        padding-left: 40em;
+        padding-right: 40em;
+      }
+
+      .buttonHeaders {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .ph {
+        color: white;
+        font-weight: bold;
+        font-size: 16em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="line-wrapper" id="lw"></div>
+
+    <div class="settings-wrapper" id="sw">
+      <div class="buttonHeaders">
+        <p class="ph">Animation</p>
+        <button id="b1" onclick="handleAnim()">OFF</button>
+      </div>
+
+      <div class="buttonHeaders">
+        <p class="ph">Grid</p>
+        <button id="b2" onclick="handleGrid()">ON</button>
+      </div>
+
+      <div class="buttonHeaders">
+        <p class="ph">Speed: left is fastest, right is slowest</p>
+        <input
+          id="b3"
+          type="range"
+          min="100"
+          max="900"
+          value="500"
+          onchange="handleSpeed()"
+        />
+      </div>
+    </div>
+
+    <script>
+      const numlines = 5; // don't want to bother with changing this, so just hardcoded it
+      const lcolors = [
+        "#a60000", //red
+        "#278400", //green
+        "#002384", //blue
+        "#a2ac12", //yellow
+        "#88068c", //purple
+        "#00a6a6", //teal (cyan)
+        "#a6005c", //pink
+        "#000000", //black
+        "#a67b00", //brown
+        "#004da6", //dark blue
+      ];
+      let animTimer; // timer for animation loop, used to stop the loop when animation is turned off
+
+      // Parameters which can be changed by user
+      let lineGen = false; // Toggle animation: false by default
+      let lineSpeed = 500; // Line speed: [100-900] ms, 500ms is default
+      // Grid: true by default
+
+      // Their functions
+      function handleAnim() {
+        let buttonState = document.getElementById("b1").innerHTML;
+        if (buttonState === "ON") {
+          clearTimeout(animTimer);
+          document.getElementById("b1").innerHTML = "OFF";
+          lineGen = false;
+          document.getElementById("b2").disabled = false;
+          document.getElementById("b3").disabled = false;
+
+          document.getElementById("lw").replaceChildren();
+          for (let i = 0; i < numlines; i++) {
+            linePath[i].elements = [];
+            linePath[i].path = [];
+          }
+        } else {
+          document.getElementById("b1").innerHTML = "ON";
+          lineGen = true;
+
+          for (let i = 0; i < numlines; i++) {
+            lineAnimInit(i);
+          }
+          lineAnimLoop();
+
+          document.getElementById("b2").disabled = true;
+          document.getElementById("b3").disabled = true;
+        }
+      }
+
+      function handleGrid() {
+        let buttonState = document.getElementById("b2").innerHTML;
+        if (buttonState === "ON") {
+          document.getElementById("b2").innerHTML = "OFF";
+          document.getElementById("lw").style.backgroundImage = "none";
+        } else {
+          document.getElementById("b2").innerHTML = "ON";
+          document.getElementById("lw").style.backgroundImage =
+            "linear-gradient(to right, #af6060 1em, transparent 1em), linear-gradient(to bottom, #af6060 1em, transparent 1em)";
+        }
+      }
+
+      function handleSpeed() {
+        lineSpeed = document.getElementById("b3").value;
+      }
+      // End
+
+      let linePath = {
+        0: {
+          path: [], // [x, y, direction] where dir is left or right or up or down
+          color: "",
+          elements: [],
+        },
+        1: {
+          path: [],
+          color: "",
+          elements: [],
+        },
+        2: {
+          path: [],
+          color: "",
+          elements: [],
+        },
+        3: {
+          path: [],
+          color: "",
+          elements: [],
+        },
+        4: {
+          path: [],
+          color: "",
+          elements: [],
+        },
+      };
+
+      const lineWrapperPos = document
+        .getElementById("lw")
+        .getBoundingClientRect();
+      const lineWrapperWidth = document.getElementById("lw").style.borderWidth;
+
+      const lineXSqNum = Math.floor(lineWrapperPos.width / 20.0) - 1;
+      const lineYSqNum = Math.floor(lineWrapperPos.height / 20.0) - 1;
+      const exsX = lineWrapperPos.width % 20.0;
+      const exsY = lineWrapperPos.height % 20.0;
+
+      function lineAnimInit(lineId) {
+        const line = document.createElement("span");
+
+        line.style.position = "absolute";
+
+        const randx = Math.floor(Math.random() * 2);
+
+        let startX = Math.floor(randx * lineXSqNum);
+        let startY = Math.floor(Math.random() * lineYSqNum);
+
+        while (
+          (startX === 0 && startY === 0) ||
+          (startX === 0 && startY === lineYSqNum) ||
+          (startX === lineXSqNum && startY === 0) ||
+          (startX === lineXSqNum && startY === lineYSqNum)
+        ) {
+          startX = Math.floor(randx * lineXSqNum);
+          startY = Math.floor(Math.random() * lineYSqNum);
+        }
+
+        line.style.left = `${startX * 20}em`;
+        line.style.top = `${startY * 20}em`;
+        line.style.backgroundColor =
+          lcolors[Math.floor(Math.random() * lcolors.length)];
+
+        linePath[lineId].color = line.style.backgroundColor;
+
+        if (startX === lineXSqNum) {
+          line.style.width = `${exsX + 1.5}em`;
+        } else {
+          line.style.width = "20em";
+        }
+
+        if (startY === lineYSqNum) {
+          line.style.height = `${exsY + 1.5}em`;
+        } else {
+          line.style.height = "20em";
+        }
+
+        if (randx === 0) {
+          // line from left side goes to right
+          linePath[lineId].elements.push(line);
+          document.getElementById("lw").appendChild(line);
+
+          const lineAddL = document.createElement("span");
+          lineAddL.style.position = "absolute";
+          lineAddL.style.left = `${(startX + 1) * 20}em`;
+          lineAddL.style.top = `${startY * 20}em`;
+          lineAddL.style.backgroundColor = line.style.backgroundColor;
+          lineAddL.style.width = "20em";
+          lineAddL.style.height = "20em";
+          linePath[lineId].path = [startX + 1, startY, "right"];
+          linePath[lineId].elements.push(lineAddL);
+          document.getElementById("lw").appendChild(lineAddL);
+        } else {
+          // line from right side goes to left
+          linePath[lineId].elements.push(line);
+          document.getElementById("lw").appendChild(line);
+
+          const lineAddR = document.createElement("span");
+          lineAddR.style.position = "absolute";
+          lineAddR.style.left = `${(startX - 1) * 20}em`;
+          lineAddR.style.top = `${startY * 20}em`;
+          lineAddR.style.backgroundColor = line.style.backgroundColor;
+          lineAddR.style.width = "20em";
+          lineAddR.style.height = "20em";
+          linePath[lineId].path = [startX - 1, startY, "left"];
+          linePath[lineId].elements.push(lineAddR);
+          document.getElementById("lw").appendChild(lineAddR);
+        }
+      }
+
+      function lineAnimLoop() {
+        if (!lineGen) {
+          return;
+        }
+
+        for (let i = 0; i < numlines; i++) {
+          const line = document.createElement("span");
+
+          line.style.position = "absolute";
+
+          let prevMoveX = linePath[i].path[0];
+          let prevMoveY = linePath[i].path[1];
+          let prevMoveDir = linePath[i].path[2];
+
+          line.style.backgroundColor = linePath[i].color;
+
+          const nextMoveDirNum = Math.floor(Math.random() * 3);
+          let nextMoveDir = "";
+          let nextMoveX = prevMoveX;
+          let nextMoveY = prevMoveY;
+
+          if (prevMoveDir === "left") {
+            if (nextMoveDirNum === 0) {
+              nextMoveDir = "left";
+              nextMoveX -= 1;
+            } else if (nextMoveDirNum === 1) {
+              nextMoveDir = "up";
+              nextMoveY -= 1;
+            } else {
+              nextMoveDir = "down";
+              nextMoveY += 1;
+            }
+          } else if (prevMoveDir === "right") {
+            if (nextMoveDirNum === 0) {
+              nextMoveDir = "right";
+              nextMoveX += 1;
+            } else if (nextMoveDirNum === 1) {
+              nextMoveDir = "up";
+              nextMoveY -= 1;
+            } else {
+              nextMoveDir = "down";
+              nextMoveY += 1;
+            }
+          } else if (prevMoveDir === "up") {
+            if (nextMoveDirNum === 0) {
+              nextMoveDir = "left";
+              nextMoveX -= 1;
+            } else if (nextMoveDirNum === 1) {
+              nextMoveDir = "right";
+              nextMoveX += 1;
+            } else {
+              nextMoveDir = "up";
+              nextMoveY -= 1;
+            }
+          } else {
+            if (nextMoveDirNum === 0) {
+              nextMoveDir = "left";
+              nextMoveX -= 1;
+            } else if (nextMoveDirNum === 1) {
+              nextMoveDir = "right";
+              nextMoveX += 1;
+            } else {
+              nextMoveDir = "down";
+              nextMoveY += 1;
+            }
+          }
+
+          line.style.left = `${nextMoveX * 20}em`;
+          line.style.top = `${nextMoveY * 20}em`;
+          linePath[i].path = [nextMoveX, nextMoveY, nextMoveDir];
+          linePath[i].elements.push(line);
+
+          if (
+            nextMoveX >= lineXSqNum ||
+            nextMoveX <= 0 ||
+            nextMoveY >= lineYSqNum ||
+            nextMoveY <= 0
+          ) {
+            line.style.width =
+              nextMoveX >= lineXSqNum ? `${exsX + 1.5}em` : "20em";
+            line.style.height =
+              nextMoveY >= lineYSqNum ? `${exsY + 1.5}em` : "20em";
+
+            linePath[i].elements.pop();
+            linePath[i].elements.forEach((el) => el.remove());
+            linePath[i].elements = [];
+            linePath[i].path = [];
+            lineAnimInit(i);
+          } else {
+            line.style.width = "20em";
+            line.style.height = "20em";
+            document.getElementById("lw").appendChild(line);
+          }
+        }
+
+        if (lineGen) {
+          animTimer = setTimeout(lineAnimLoop, lineSpeed);
+        }
+      }
+    </script>
+  </body>
+</html>
