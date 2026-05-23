@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Menu</title>
+
+    <style>
+      #root {
+        max-height: 100vh;
+        overflow: hidden;
+      }
+
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        display: flex;
+        flex-direction: row;
+        justify-content: start;
+        background-color: rgb(0, 0, 0);
+        font-size: 1px;
+        padding-left: 4vw;
+        padding-right: 4vw;
+        padding-top: 10vh;
+      }
+
+      #p1 {
+        color: rgb(181, 181, 181);
+        font-size: large;
+        font-weight: bold;
+      }
+
+      #p2 {
+        margin-top: 1px;
+        margin-bottom: 10vh;
+        color: rgb(181, 181, 181);
+        font-size: large;
+        font-weight: bold;
+      }
+
+      .button1:hover {
+        background-color: rgb(181, 181, 181);
+      }
+
+      .button1 {
+        width: 20vw;
+        margin-bottom: 4px;
+        cursor: pointer;
+        padding: 8px;
+      }
+
+      .text1 {
+        color: white;
+        font-size: medium;
+        font-weight: bold;
+      }
+
+      #d1 {
+        display: flex;
+        flex-direction: column;
+      }
+
+      #d2 {
+        background-color: rgb(48, 48, 48);
+        width: 20vw;
+        padding: 4px;
+      }
+
+      #img1 {
+        margin-left: 44%;
+        width: 20vw;
+        height: 40vh;
+        margin-top: 4vh;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="d1">
+      <p id="p1">Choose option</p>
+      <p id="p2">After click, a new tab will open</p>
+      <div id="d2">
+        <div class="button1"><span class="text1">Flower</span></div>
+        <div class="button1"><span class="text1">Line</span></div>
+        <div class="button1"><span class="text1">Why</span></div>
+      </div>
+    </div>
+
+    <img id="img1" src="index_img/knight.jpeg" />
+  </body>
+</html>

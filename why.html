@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Why</title>
+
+    <style>
+      #root {
+        max-height: 100vh;
+        overflow: hidden;
+      }
+
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-color: black;
+        font-size: 1px;
+      }
+
+      #why {
+        color: rgb(159, 0, 0);
+        font-weight: bold;
+        font-size: 36px;
+      }
+
+      #arrL {
+        height: 8vh;
+        width: 4vw;
+      }
+
+      #arrR {
+        transform: scaleX(-1);
+        height: 8vh;
+        width: 4vw;
+      }
+
+      #main_img {
+        height: 60vh;
+        width: 40vw;
+      }
+
+      .img_div {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        border: none;
+      }
+
+      .barr {
+        background-color: rgb(71, 0, 0);
+        border: none;
+        cursor: pointer;
+        border-radius: 20px;
+        padding: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <p id="why"></p>
+    <div class="img_div">
+      <button class="barr" onclick="handleLeftArrow()">
+        <img id="arrL" src="./why_img/left-arrow.png" alt="arrow left" />
+      </button>
+      <img id="main_img" src="./why_img/1.jpg" alt="Why?" />
+      <button class="barr" onclick="handleRightArrow()">
+        <img id="arrR" src="./why_img/left-arrow.png" alt="arrow right" />
+      </button>
+    </div>
+
+    <script>
+      const listImg = [
+        "./why_img/1.jpg",
+        "./why_img/2.jpg",
+        "./why_img/3.jpg",
+        "./why_img/4.jpg",
+        "./why_img/5.jpg",
+      ];
+      const listText = [
+        "You can't hide from me",
+        "Why?",
+        "You did this",
+        "Why did you do it",
+        "You know what you did",
+        "I see you",
+        "I know you",
+        "I am coming for you",
+        "There is no escape",
+      ];
+      const posList = [
+        // [top, left]
+        ["10%", "10%"],
+        ["45%", "10%"],
+        ["70%", "10%"],
+        ["10%", "45%"],
+        ["45%", "45%"],
+        ["70%", "45%"],
+        ["10%", "70%"],
+        ["45%", "70%"],
+        ["70%", "70%"],
+      ];
+      let currentIndex = 0;
+      let counterList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+      let i = 0;
+
+      function handleLeftArrow() {
+        if (currentIndex > 0) {
+          currentIndex--;
+        } else {
+          currentIndex = listImg.length - 1;
+        }
+        document.getElementById("main_img").src = listImg[currentIndex];
+      }
+
+      function handleRightArrow() {
+        if (currentIndex < listImg.length - 1) {
+          currentIndex++;
+        } else {
+          currentIndex = 0;
+        }
+        document.getElementById("main_img").src = listImg[currentIndex];
+      }
+
+      function whyTypeAnim(str, log) {
+        if (i <= str.length) {
+          if (log) {
+            // console.log("id: ", id);
+            // console.log("get element: ", document.getElementById(id));
+            // console.log("element: ", obj);
+            // console.log(counter);
+          }
+          document.getElementById("why").textContent =
+            str.substring(0, i) + "_";
+          i++;
+          setTimeout(() => {
+            whyTypeAnim(str, log);
+          }, 500);
+        }
+      }
+
+      function arrTypeAnim(obj, str, index, log) {
+        if (counterList[index] <= str.length) {
+          if (log) {
+            // console.log("id: ", id);
+            // console.log("get element: ", document.getElementById(id));
+            // console.log("element: ", obj);
+            // console.log(counter);
+          }
+          obj.textContent = str.substring(0, counterList[index]) + "_";
+          counterList[index]++;
+          setTimeout(() => {
+            arrTypeAnim(obj, str, index, log);
+          }, 500);
+        }
+      }
+
+      function randText(j) {
+        const el = document.createElement("p");
+        el.style.position = "absolute";
+        el.style.color = "white";
+        el.style.top = posList[j][0];
+        el.style.left = posList[j][1];
+        el.textContent = listText[j];
+        el.id = `rp${j}`;
+        const randdeg = Math.floor(Math.random() * 91);
+        el.style.transform = `rotate(${randdeg})`;
+        arrTypeAnim(el, el.textContent, j, false);
+      }
+
+      function randTextAnim() {
+        // change to j < 9
+        for (let j = 0; j < 1; j++) {
+          setTimeout(() => {
+            randText(j);
+          }, 500);
+        }
+        console.log(counterList);
+      }
+
+      whyTypeAnim(listText[0], false);
+      randTextAnim();
+    </script>
+  </body>
+</html>
