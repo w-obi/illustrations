@@ -113,6 +113,7 @@
       ];
       let currentIndex = 0;
       let counterList = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+      let elemList = [];
       let i = 0;
 
       function handleLeftArrow() {
@@ -146,11 +147,11 @@
           i++;
           setTimeout(() => {
             whyTypeAnim(str, log);
-          }, 500);
+          }, 200);
         }
       }
 
-      function arrTypeAnim(obj, str, index, log) {
+      function arrTypeAnim(str, index, log) {
         if (counterList[index] <= str.length) {
           if (log) {
             // console.log("id: ", id);
@@ -158,11 +159,12 @@
             // console.log("element: ", obj);
             // console.log(counter);
           }
-          obj.textContent = str.substring(0, counterList[index]) + "_";
+          elemList[index].textContent =
+            str.substring(0, counterList[index]) + "_";
           counterList[index]++;
           setTimeout(() => {
-            arrTypeAnim(obj, str, index, log);
-          }, 500);
+            arrTypeAnim(str, index, log);
+          }, 200);
         }
       }
 
@@ -172,24 +174,23 @@
         el.style.color = "white";
         el.style.top = posList[j][0];
         el.style.left = posList[j][1];
-        el.textContent = listText[j];
         el.id = `rp${j}`;
         const randdeg = Math.floor(Math.random() * 91);
-        el.style.transform = `rotate(${randdeg})`;
-        arrTypeAnim(el, el.textContent, j, false);
+        el.style.transform = `rotate(${randdeg}deg)`;
+        el.style.fontSize = "16px";
+        el.style.fontWeight = "bold";
+        elemList.push(el);
+        arrTypeAnim(listText[j], j, false);
+        document.body.appendChild(el);
       }
 
       function randTextAnim() {
-        // change to j < 9
-        for (let j = 0; j < 1; j++) {
-          setTimeout(() => {
-            randText(j);
-          }, 500);
+        for (let j = 0; j < 9; j++) {
+          randText(j);
         }
-        console.log(counterList);
       }
 
-      whyTypeAnim(listText[0], false);
+      whyTypeAnim(listText[1], false);
       randTextAnim();
     </script>
   </body>
